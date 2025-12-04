@@ -122,6 +122,7 @@ class Teacher(User):
 #testing code from here onwards 
 
 if __name__ == "__main__":
+    print("\n\n\n\n\n")
     #Step 1: Creating a teacher (inheritance taking place)
     myTeacher = Teacher(1,"Sir Jafir", "jafirkhan@uni.edu","pass123")
     myTeacher.login()

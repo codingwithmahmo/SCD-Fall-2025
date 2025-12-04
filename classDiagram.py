@@ -133,3 +133,15 @@ if __name__ == "__main__":
     myStudent = Student(2, "Mahmood", "mahmood@uni.edu","mahmood1234")
     myStudent.viewDashboard()
     myStudent.submitLeaveApplication()
+
+    print("\n\n\n\n")
+
+    teacher2 = Teacher(1,"Sir Mir Jafar","mirjafar@uni.edu","mirjafar123")
+    teacher2.login()
+
+    teacher2.createSchedule("Data Structures & Algorithms","11:20 AM")
+    
+
+    student2 = Student(3,"Asif Khan","asifkhan@uni.edu","asifkhan1234")
+    student2.viewDashboard()
+    student2.submitLeaveApplication()

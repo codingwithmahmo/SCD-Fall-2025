@@ -1,6 +1,6 @@
 from datetime import datetime
 
-#PARENT CLASS
+#This acts as the parent class being used 
 class User:
     def __init__(self,userID,name,email,password):
         self.userID = userID
@@ -13,7 +13,7 @@ class User:
     def recoverPassword(self):
         print(f"Password recovery email sent to {self.email}")
 
-
+#THIS CLASS RECORDS THE FOLLOWING THINGS: attendanceID, date, status (present/absent)
 class Attendance:
     def __init__(self, attendanceID,date,status):
         self.attendanceID = attendanceID
@@ -23,6 +23,7 @@ class Attendance:
     def recordAttendance(self):
         print(f"Attendance Recorded: {self.status} on {self.date}")
 
+#SYSTEM NOTIFICATION CLASS including notificationID, message, dateIssued
 class Notification: 
     def __init__(self, notificationID,message,dateIssued):
         self.notificationID = notificationID
@@ -32,6 +33,7 @@ class Notification:
         print(f"Notification sent: {self.message}")
         return True
     
+#SYSTEM REPORT CLASS including reportID, typeOfReport, generatedDate
 class Report:
     def __init__(self,reportID,typeOfReport, generatedDate):
         self.reportID = reportID
@@ -41,6 +43,7 @@ class Report:
     def generateReport(self):
         print(f"Generating {self.type} report....")
 
+#SCHEDULE CLASS including scheduleID, courseName, timeSlot
 class Schedule:
     def __init__(self,scheduleID,courseName,timeSlot):
         self.scheduleID = scheduleID
@@ -50,8 +53,7 @@ class Schedule:
         print(f"Schedule created for {self.courseName} at {self.timeSlot}")
         return True
     
-
-
+#STUDENT CLASS INHERITING FROM USER
 class Student(User):
     def __init__(self, userID,name,email,password):
         super().__init__(userID,name,email,password)
@@ -67,7 +69,7 @@ class Student(User):
     def submitLeaveApplication(self):
         print("Leave Application submitted successfully.")
 
-
+#ADMIN CLASS INHERITING FROM USER
 class Admin(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
@@ -95,6 +97,7 @@ class Admin(User):
         print("Issuing mass notifications")
         return 1
     
+#TEACHER CLASS INHERITING FROM USER
 class Teacher(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
@@ -118,7 +121,7 @@ class Teacher(User):
         return ["StudentA", "StudentB"]
     
 
-#testing code from here onwards 
+#MAIN FUNCTION TO DEMONSTRATE THE WORKING OF THE CLASSES AND THEIR RELATIONSHIPS
 
 if __name__ == "__main__":
     print("\n\n\n\n\n")

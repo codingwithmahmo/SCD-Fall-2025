@@ -1,6 +1,5 @@
 from datetime import datetime
 
-
 #PARENT CLASS
 class User:
     def __init__(self,userID,name,email,password):

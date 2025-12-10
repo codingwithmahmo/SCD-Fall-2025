@@ -103,6 +103,8 @@ class Teacher(User):
         super().__init__(userID,name,email,password)
 
     def createSchedule(self,course,time):
+        #Association happening here between Teacher and Schedule, object calling Schedule CLASS method
+        #teacher USES A SCHEDULE
         newSchedule = Schedule(101,course,time)
         newSchedule.createSchedule()
         return newSchedule
@@ -111,6 +113,9 @@ class Teacher(User):
         print("Teacher marking class attendance....")
         return True
     
+    #TEACHER GENERATING REPORT USING REPORT CLASS
+    #A Teacher uses a report.
+    # Here teacher is importing the report() method from the REPORT Class)
     def generateReport(self):
         report = Report(1, "Class Performance", datetime.now())
         report.generateReport()
@@ -125,26 +130,40 @@ class Teacher(User):
 
 if __name__ == "__main__":
     print("\n\n\n\n\n")
-    #Step 1: Creating a teacher (inheritance taking place)
-    myTeacher = Teacher(1,"Sir Jafir", "jafirkhan@uni.edu","pass123")
-    myTeacher.login()
-
-    #Step 2: Teacher creates a schedule (association happening here)
-    myTeacher.createSchedule("Software Engineering", "10:00 AM")
-
-    #Step 3: Creating a student
-    myStudent = Student(2, "Mahmood", "mahmood@uni.edu","mahmood1234")
-    myStudent.viewDashboard()
-    myStudent.submitLeaveApplication()
-
-    print("\n\n\n\n")
-
-    teacher2 = Teacher(1,"Sir Mir Jafar","mirjafar@uni.edu","mirjafar123")
-    teacher2.login()
-
-    teacher2.createSchedule("Data Structures & Algorithms","11:20 AM")
+    print("--- 1. DIRECT Notification Test ---")
     
-
-    student2 = Student(3,"Asif Khan","asifkhan@uni.edu","asifkhan1234")
-    student2.viewDashboard()
-    student2.submitLeaveApplication()
+    # Direct testing: Creating a Notification object directly to check its functionality.
+    # We use the 'Notification' class to create a new alert.
+    alert_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    system_alert = Notification(
+        notificationID=1001,
+        message="Semester fee submission deadline is tomorrow.",
+        dateIssued=alert_time
+    )
+    
+    print(f"Notification Object created with ID: {system_alert.notificationID}")
+    
+    # Calling the Notification's method
+    system_alert.sendNotification()
+    
+    print("\n--- 2. Admin Issuing Notifications Test (Association/Dependency) ---")
+    
+    # Step 1: Create an Admin object.
+    # INHERITANCE: 'Admin' is a child of 'User'.
+    myAdmin = Admin(4, "Mr. Head Administrator", "admin@uni.edu", "securepass")
+    myAdmin.login() # Calls the inherited 'login' method from the 'User' parent class.
+    
+    # Step 2: Admin issues a mass notification.
+    # ASSOCIATION (Conceptual): Admin's method uses the concept of Notification.
+    # In a real system, this method would internally create and send Notification objects.
+    notifications_sent = myAdmin.issueNotifications() 
+    print(f"Admin action successful. Number of mass actions returned: {notifications_sent}")
+    
+    print("\n--- 3. Student Receiving Alerts Test ---")
+    
+    # Using the existing student object (or creating a new one)
+    myStudent = Student(2, "Mahmood", "mahmood@uni.edu","mahmood1234") 
+    
+    # Simulating the student checking for alerts (which are usually notifications)
+    alerts = myStudent.receiveAlerts()
+    print(f"Student {myStudent.name} received alerts: {alerts}")

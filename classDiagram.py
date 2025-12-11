@@ -53,6 +53,7 @@ class Schedule:
     
 # --- USER ROLE CLASSES (INHERITANCE) ---
 
+#implements "is a" relationship as "student is a user"
 class Student(User):
     def __init__(self, userID,name,email,password):
         super().__init__(userID,name,email,password)
@@ -66,7 +67,8 @@ class Student(User):
         print(f"Student has {len(self.attendance_records)} attendance records.")
         
     def addAttendanceRecord(self, date, status):
-        # 🟢 COMPOSITION ACTION
+        # Composition between Student & Attendance
+        # if student is deleted this shall be deleted as well along with it's data
         new_attendance = Attendance(len(self.attendance_records) + 1, date, status)
         self.attendance_records.append(new_attendance)
         new_attendance.recordAttendance()
@@ -76,7 +78,6 @@ class Student(User):
         return True
     
     def receiveAlerts(self):
-        # 🟡 FIX: Return actual Notification objects as per UML type hint
         print("Checking Alerts.....")
         return self.alerts
     
@@ -91,7 +92,6 @@ class Student(User):
 class Admin(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
-        # 🟡 FIX: Aggregation Implementation - Admin 'manages' 0 to * Users (white diamond)
         self.managed_users = [] 
 
     def addUser(self, user_obj):
@@ -132,7 +132,6 @@ class Teacher(User):
         super().__init__(userID,name,email,password)
         # Aggregation Implementation - Teacher 'has' 0 to * Students (white diamond)
         self.students_taught = [] 
-        # Association Implementation - Teacher 'records' 1 Schedule
         self.schedule = None
 
     # Helper method to add students to the teacher's list

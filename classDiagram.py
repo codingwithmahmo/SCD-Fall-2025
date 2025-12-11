@@ -1,6 +1,7 @@
 from datetime import datetime
 
-# This acts as the parent class being used 
+# --- CORE DATA CLASSES ---
+
 class User:
     def __init__(self,userID,name,email,password):
         self.userID = userID
@@ -13,7 +14,6 @@ class User:
     def recoverPassword(self):
         print(f"Password recovery email sent to {self.email}")
 
-# THIS CLASS RECORDS THE FOLLOWING THINGS: attendanceID, date, status (present/absent)
 class Attendance:
     def __init__(self, attendanceID,date,status):
         self.attendanceID = attendanceID
@@ -21,9 +21,9 @@ class Attendance:
         self.status = status
 
     def recordAttendance(self):
+        # Using string date format for consistency with original code's __main__ block
         print(f"Attendance Recorded: {self.status} on {self.date}")
 
-# SYSTEM NOTIFICATION CLASS including notificationID, message, dateIssued
 class Notification: 
     def __init__(self, notificationID,message,dateIssued):
         self.notificationID = notificationID
@@ -33,7 +33,6 @@ class Notification:
         print(f"Notification sent: {self.message}")
         return True
     
-# SYSTEM REPORT CLASS including reportID, typeOfReport, generatedDate
 class Report:
     def __init__(self,reportID,typeOfReport, generatedDate):
         self.reportID = reportID
@@ -43,7 +42,6 @@ class Report:
     def generateReport(self):
         print(f"Generating {self.type} report....")
 
-# SCHEDULE CLASS including scheduleID, courseName, timeSlot
 class Schedule:
     def __init__(self,scheduleID,courseName,timeSlot):
         self.scheduleID = scheduleID
@@ -53,25 +51,22 @@ class Schedule:
         print(f"Schedule created for {self.courseName} at {self.timeSlot}")
         return True
     
-# STUDENT CLASS INHERITING FROM USER
+# --- USER ROLE CLASSES (INHERITANCE) ---
+
 class Student(User):
     def __init__(self, userID,name,email,password):
         super().__init__(userID,name,email,password)
-        #COMPOSITION IMPLEMENTATION START
-        # According to the UML Diagram (black diamond), Student 'owns' Attendance records.
-        # If Student is deleted, these records are logically deleted too.
-        # This list attribute establishes the Composition relationship.
+        # 🟢 Composition: Student 'owns' Attendance records (black diamond)
         self.attendance_records = [] 
-        #COMPOSITION IMPLEMENTATION END
+        # Association: Student 'receives' Notifications
+        self.alerts = []
         
     def viewDashboard(self):
         print(f"Displaying dashboard for student: {self.name}")
-        # Demonstrating Composition: Student viewing its own Attendance records
         print(f"Student has {len(self.attendance_records)} attendance records.")
         
     def addAttendanceRecord(self, date, status):
         # 🟢 COMPOSITION ACTION
-        # Creating a new Attendance object and storing it permanently in the Student's list.
         new_attendance = Attendance(len(self.attendance_records) + 1, date, status)
         self.attendance_records.append(new_attendance)
         new_attendance.recordAttendance()
@@ -79,99 +74,150 @@ class Student(User):
     def markAttendance(self):
         print(f"Student attempting to mark attendance.....")
         return True
+    
     def receiveAlerts(self):
+        # 🟡 FIX: Return actual Notification objects as per UML type hint
         print("Checking Alerts.....")
-        return ["Alert1", "Alert2"]
+        return self.alerts
     
     def submitLeaveApplication(self):
         print("Leave Application submitted successfully.")
 
-# ADMIN CLASS INHERITING FROM USER
+    # Helper method for demonstration
+    def addAlert(self, notification_obj):
+        self.alerts.append(notification_obj)
+
+
 class Admin(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
+        # 🟡 FIX: Aggregation Implementation - Admin 'manages' 0 to * Users (white diamond)
+        self.managed_users = [] 
 
-    def addUser(self):
-        print("New user added to system")
+    def addUser(self, user_obj):
+        # Update the managed_users list when adding a user
+        self.managed_users.append(user_obj)
+        print(f"New user {user_obj.name} added to system and is now managed by Admin.")
         return True
     
-    def removeUser(self):
-        print("User removed from system")
+    def removeUser(self, user_obj):
+        if user_obj in self.managed_users:
+            self.managed_users.remove(user_obj)
+            print(f"User {user_obj.name} removed from system and Admin's management list.")
+        else:
+             print(f"User {user_obj.name} not found in management list.")
+
 
     def editPermissions(self):
         print("Permissions Updated")
         return True
     
-    def exportReport(self):
-        print("Exporting report file.....")
-        # 🟡 ASSOCIATION/DEPENDENCY: Admin uses the concept of a File object (or Report) temporarily.
+    def exportReport(self, report_obj):
+        # 🟡 FIX: Dependency/Association - Admin uses a Report object
+        print(f"Exporting report file for {report_obj.type}...")
         return "File_Object"
     
     def configureSettings(self):
         print("System settings configured")
         return True
     
-    def issueNotifications(self):
-        print("Issuing mass notifications")
-        # 🟡 ASSOCIATION/DEPENDENCY: Admin uses the Notification class functionality.
-        return 1
+    def issueNotifications(self, message):
+        # 🟡 FIX: Dependency/Association - Admin uses/creates a Notification object
+        new_notification = Notification(1, message, datetime.now().strftime("%Y-%m-%d"))
+        new_notification.sendNotification()
+        return new_notification
     
-# TEACHER CLASS INHERITING FROM USER
 class Teacher(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
+        # 🟡 FIX 1: Aggregation Implementation - Teacher 'has' 0 to * Students (white diamond)
+        self.students_taught = [] 
+        # 🟡 FIX 2: Association Implementation - Teacher 'records' 1 Schedule
+        self.schedule = None
+
+    # Helper method to add students to the teacher's list
+    def addStudent(self, student_obj):
+        self.students_taught.append(student_obj)
+        print(f"Student {student_obj.name} added to Teacher's class list.")
 
     def createSchedule(self,course,time):
-        #ASSOCIATION/DEPENDENCY: Teacher uses the Schedule class temporarily within this method.
-        # The Schedule object is created locally and returned/used. This is NOT Aggregation/Composition.
+        # 🟡 FIX: Store the created Schedule object (Association/records)
         newSchedule = Schedule(101,course,time)
         newSchedule.createSchedule()
+        self.schedule = newSchedule 
         return newSchedule
     
     def markAttendance(self):
         print("Teacher marking class attendance....")
         return True
     
-    def generateReport(self):
-        #ASSOCIATION/DEPENDENCY: Teacher uses the Report class temporarily within this method.
-        # A Teacher uses a report object to generate output.
-        report = Report(1, "Class Performance", datetime.now())
+    def generateReport(self, type_of_report="Class Performance"):
+        # 🟡 FIX: Dependency/Association - Teacher uses/creates a Report object
+        report = Report(1, type_of_report, datetime.now().strftime("%Y-%m-%d"))
         report.generateReport()
         return report 
     
     def flagLowAttendance(self):
-        print("Flagging students with low attendance....")
-        return ["StudentA", "StudentB"]
+        # 🟡 FIX: Use the actual list of Student objects managed by the teacher
+        low_attendees = [s.name for s in self.students_taught if len(s.attendance_records) < 2]
+        print(f"Flagging students with low attendance: {low_attendees}")
+        # Return a list of student objects or names matching the action
+        return low_attendees
     
 
 # MAIN FUNCTION TO DEMONSTRATE THE WORKING OF THE CLASSES AND THEIR RELATIONSHIPS
 
 if __name__ == "__main__":
-    print("\n\n\n\n\n")
+    print("\n" + "="*50)
+    print("           UML Class Diagram Implementation Test")
+    print("="*50 + "\n")
     
-    # --- 1. Inheritance and Simple Functionality Test ---
-    myStudent = Student(2, "Mahmood", "mahmood@uni.edu","mahmood1234") 
-    print("--- 1. Inheritance Test ---")
-    myStudent.login() # Inherited from User
-    
-    # --- 2. Composition Test (Student and Attendance) ---
-    print("\n--- 2. Composition Test ---")
-    # 🟢 Demonstrating the Composition relationship: Student creates and owns Attendance records.
-    myStudent.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Present")
-    myStudent.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Absent")
-    myStudent.viewDashboard() # Now shows 2 records
-
-    # --- 3. Association Test (Teacher and Schedule/Report) ---
-    print("\n--- 3. Association Test ---")
+    # --- SETUP USERS ---
+    myStudent1 = Student(2, "Mahmood", "mahmood@uni.edu","mahmood1234") 
+    myStudent2 = Student(3, "Alia", "alia@uni.edu","alia567")
     myTeacher = Teacher(10, "Mr. Islam Abbasi", "islam@uni.edu", "pass123")
-    
-    # 🟡 Teacher using Schedule (Association)
-    myTeacher.createSchedule("Software Construction", "10:00 AM")
-    
-    # 🟡 Teacher using Report (Association)
-    myTeacher.generateReport()
-    
-    print("\n--- 4. Admin and Dependency Test ---")
     myAdmin = Admin(4, "Mr. Head Administrator", "admin@uni.edu", "securepass")
-    notifications_sent = myAdmin.issueNotifications() 
-    print(f"Admin action successful. Mass notifications count: {notifications_sent}")
+    
+    
+    # --- 1. Inheritance and Composition Test ---
+    print("--- 1. Inheritance and Composition (Student) ---")
+    myStudent1.login() # Inherited from User
+    
+    # 🟢 Composition: Student owns Attendance records
+    myStudent1.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Present")
+    myStudent1.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Absent")
+    myStudent1.viewDashboard() 
+    
+    # --- 2. Aggregation (Admin manages Users) Test ---
+    print("\n--- 2. Aggregation (Admin manages Users) ---")
+    
+    # 🟡 FIX: Admin adds various Users to their managed list
+    myAdmin.addUser(myTeacher)
+    myAdmin.addUser(myStudent1)
+    
+    print(f"Admin is now managing {len(myAdmin.managed_users)} users.")
+    myAdmin.removeUser(myStudent1)
+    print(f"Admin is now managing {len(myAdmin.managed_users)} users after removal.")
+    
+    # --- 3. Aggregation (Teacher has Students) Test ---
+    print("\n--- 3. Aggregation (Teacher has Students) ---")
+    
+    # 🟡 FIX: Teacher adds students to their class list
+    myTeacher.addStudent(myStudent1)
+    myTeacher.addStudent(myStudent2)
+
+    # 🟡 Teacher generating a Report (Dependency)
+    generated_report = myTeacher.generateReport("Term End Class Report")
+    
+    # 🟡 Teacher flagging low attendance (uses the Aggregated Student list)
+    myStudent2.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Present") # Alia has only 1 record
+    low_attendees = myTeacher.flagLowAttendance() # Alia should be flagged as < 2
+    
+    # --- 4. Associations/Dependencies Test ---
+    print("\n--- 4. Associations/Dependencies ---")
+    
+    # 🟡 Teacher creating and recording a Schedule (Association/records)
+    mySchedule = myTeacher.createSchedule("Software Construction", "10:00 AM")
+    
+    # 🟡 Admin exporting a Report (Dependency)
+    myAdmin.exportReport(generated_report)

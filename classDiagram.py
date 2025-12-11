@@ -130,9 +130,9 @@ class Admin(User):
 class Teacher(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
-        # 🟡 FIX 1: Aggregation Implementation - Teacher 'has' 0 to * Students (white diamond)
+        # Aggregation Implementation - Teacher 'has' 0 to * Students (white diamond)
         self.students_taught = [] 
-        # 🟡 FIX 2: Association Implementation - Teacher 'records' 1 Schedule
+        # Association Implementation - Teacher 'records' 1 Schedule
         self.schedule = None
 
     # Helper method to add students to the teacher's list

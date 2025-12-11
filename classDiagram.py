@@ -1,6 +1,6 @@
 from datetime import datetime
 
-#This acts as the parent class being used 
+# This acts as the parent class being used 
 class User:
     def __init__(self,userID,name,email,password):
         self.userID = userID
@@ -13,7 +13,7 @@ class User:
     def recoverPassword(self):
         print(f"Password recovery email sent to {self.email}")
 
-#THIS CLASS RECORDS THE FOLLOWING THINGS: attendanceID, date, status (present/absent)
+# THIS CLASS RECORDS THE FOLLOWING THINGS: attendanceID, date, status (present/absent)
 class Attendance:
     def __init__(self, attendanceID,date,status):
         self.attendanceID = attendanceID
@@ -23,7 +23,7 @@ class Attendance:
     def recordAttendance(self):
         print(f"Attendance Recorded: {self.status} on {self.date}")
 
-#SYSTEM NOTIFICATION CLASS including notificationID, message, dateIssued
+# SYSTEM NOTIFICATION CLASS including notificationID, message, dateIssued
 class Notification: 
     def __init__(self, notificationID,message,dateIssued):
         self.notificationID = notificationID
@@ -33,7 +33,7 @@ class Notification:
         print(f"Notification sent: {self.message}")
         return True
     
-#SYSTEM REPORT CLASS including reportID, typeOfReport, generatedDate
+# SYSTEM REPORT CLASS including reportID, typeOfReport, generatedDate
 class Report:
     def __init__(self,reportID,typeOfReport, generatedDate):
         self.reportID = reportID
@@ -43,7 +43,7 @@ class Report:
     def generateReport(self):
         print(f"Generating {self.type} report....")
 
-#SCHEDULE CLASS including scheduleID, courseName, timeSlot
+# SCHEDULE CLASS including scheduleID, courseName, timeSlot
 class Schedule:
     def __init__(self,scheduleID,courseName,timeSlot):
         self.scheduleID = scheduleID
@@ -53,12 +53,29 @@ class Schedule:
         print(f"Schedule created for {self.courseName} at {self.timeSlot}")
         return True
     
-#STUDENT CLASS INHERITING FROM USER
+# STUDENT CLASS INHERITING FROM USER
 class Student(User):
     def __init__(self, userID,name,email,password):
         super().__init__(userID,name,email,password)
+        # 🟢 COMPOSITION IMPLEMENTATION START
+        # According to the UML Diagram (black diamond), Student 'owns' Attendance records.
+        # If Student is deleted, these records are logically deleted too.
+        # This list attribute establishes the Composition relationship.
+        self.attendance_records = [] 
+        # 🟢 COMPOSITION IMPLEMENTATION END
+        
     def viewDashboard(self):
         print(f"Displaying dashboard for student: {self.name}")
+        # Demonstrating Composition: Student viewing its own Attendance records
+        print(f"Student has {len(self.attendance_records)} attendance records.")
+        
+    def addAttendanceRecord(self, date, status):
+        # 🟢 COMPOSITION ACTION
+        # Creating a new Attendance object and storing it permanently in the Student's list.
+        new_attendance = Attendance(len(self.attendance_records) + 1, date, status)
+        self.attendance_records.append(new_attendance)
+        new_attendance.recordAttendance()
+        
     def markAttendance(self):
         print(f"Student attempting to mark attendance.....")
         return True
@@ -69,7 +86,7 @@ class Student(User):
     def submitLeaveApplication(self):
         print("Leave Application submitted successfully.")
 
-#ADMIN CLASS INHERITING FROM USER
+# ADMIN CLASS INHERITING FROM USER
 class Admin(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
@@ -87,6 +104,7 @@ class Admin(User):
     
     def exportReport(self):
         print("Exporting report file.....")
+        # 🟡 ASSOCIATION/DEPENDENCY: Admin uses the concept of a File object (or Report) temporarily.
         return "File_Object"
     
     def configureSettings(self):
@@ -95,16 +113,17 @@ class Admin(User):
     
     def issueNotifications(self):
         print("Issuing mass notifications")
+        # 🟡 ASSOCIATION/DEPENDENCY: Admin uses the Notification class functionality.
         return 1
     
-#TEACHER CLASS INHERITING FROM USER
+# TEACHER CLASS INHERITING FROM USER
 class Teacher(User):
     def __init__(self,userID,name,email,password):
         super().__init__(userID,name,email,password)
 
     def createSchedule(self,course,time):
-        #Association happening here between Teacher and Schedule, object calling Schedule CLASS method
-        #teacher USES A SCHEDULE
+        # 🟡 ASSOCIATION/DEPENDENCY: Teacher uses the Schedule class temporarily within this method.
+        # The Schedule object is created locally and returned/used. This is NOT Aggregation/Composition.
         newSchedule = Schedule(101,course,time)
         newSchedule.createSchedule()
         return newSchedule
@@ -113,10 +132,9 @@ class Teacher(User):
         print("Teacher marking class attendance....")
         return True
     
-    #TEACHER GENERATING REPORT USING REPORT CLASS
-    #A Teacher uses a report.
-    # Here teacher is importing the report() method from the REPORT Class)
     def generateReport(self):
+        # 🟡 ASSOCIATION/DEPENDENCY: Teacher uses the Report class temporarily within this method.
+        # A Teacher uses a report object to generate output.
         report = Report(1, "Class Performance", datetime.now())
         report.generateReport()
         return report 
@@ -126,44 +144,34 @@ class Teacher(User):
         return ["StudentA", "StudentB"]
     
 
-#MAIN FUNCTION TO DEMONSTRATE THE WORKING OF THE CLASSES AND THEIR RELATIONSHIPS
+# MAIN FUNCTION TO DEMONSTRATE THE WORKING OF THE CLASSES AND THEIR RELATIONSHIPS
 
 if __name__ == "__main__":
     print("\n\n\n\n\n")
-    print("--- 1. DIRECT Notification Test ---")
     
-    # Direct testing: Creating a Notification object directly to check its functionality.
-    # We use the 'Notification' class to create a new alert.
-    alert_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    system_alert = Notification(
-        notificationID=1001,
-        message="Semester fee submission deadline is tomorrow.",
-        dateIssued=alert_time
-    )
-    
-    print(f"Notification Object created with ID: {system_alert.notificationID}")
-    
-    # Calling the Notification's method
-    system_alert.sendNotification()
-    
-    print("\n--- 2. Admin Issuing Notifications Test (Association/Dependency) ---")
-    
-    # Step 1: Create an Admin object.
-    # INHERITANCE: 'Admin' is a child of 'User'.
-    myAdmin = Admin(4, "Mr. Head Administrator", "admin@uni.edu", "securepass")
-    myAdmin.login() # Calls the inherited 'login' method from the 'User' parent class.
-    
-    # Step 2: Admin issues a mass notification.
-    # ASSOCIATION (Conceptual): Admin's method uses the concept of Notification.
-    # In a real system, this method would internally create and send Notification objects.
-    notifications_sent = myAdmin.issueNotifications() 
-    print(f"Admin action successful. Number of mass actions returned: {notifications_sent}")
-    
-    print("\n--- 3. Student Receiving Alerts Test ---")
-    
-    # Using the existing student object (or creating a new one)
+    # --- 1. Inheritance and Simple Functionality Test ---
     myStudent = Student(2, "Mahmood", "mahmood@uni.edu","mahmood1234") 
+    print("--- 1. Inheritance Test ---")
+    myStudent.login() # Inherited from User
     
-    # Simulating the student checking for alerts (which are usually notifications)
-    alerts = myStudent.receiveAlerts()
-    print(f"Student {myStudent.name} received alerts: {alerts}")
+    # --- 2. Composition Test (Student and Attendance) ---
+    print("\n--- 2. Composition Test ---")
+    # 🟢 Demonstrating the Composition relationship: Student creates and owns Attendance records.
+    myStudent.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Present")
+    myStudent.addAttendanceRecord(datetime.now().strftime("%Y-%m-%d"), "Absent")
+    myStudent.viewDashboard() # Now shows 2 records
+
+    # --- 3. Association Test (Teacher and Schedule/Report) ---
+    print("\n--- 3. Association Test ---")
+    myTeacher = Teacher(10, "Mr. Islam Abbasi", "islam@uni.edu", "pass123")
+    
+    # 🟡 Teacher using Schedule (Association)
+    myTeacher.createSchedule("Software Construction", "10:00 AM")
+    
+    # 🟡 Teacher using Report (Association)
+    myTeacher.generateReport()
+    
+    print("\n--- 4. Admin and Dependency Test ---")
+    myAdmin = Admin(4, "Mr. Head Administrator", "admin@uni.edu", "securepass")
+    notifications_sent = myAdmin.issueNotifications() 
+    print(f"Admin action successful. Mass notifications count: {notifications_sent}")

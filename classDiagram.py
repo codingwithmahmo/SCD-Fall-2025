@@ -57,12 +57,12 @@ class Schedule:
 class Student(User):
     def __init__(self, userID,name,email,password):
         super().__init__(userID,name,email,password)
-        # 🟢 COMPOSITION IMPLEMENTATION START
+        #COMPOSITION IMPLEMENTATION START
         # According to the UML Diagram (black diamond), Student 'owns' Attendance records.
         # If Student is deleted, these records are logically deleted too.
         # This list attribute establishes the Composition relationship.
         self.attendance_records = [] 
-        # 🟢 COMPOSITION IMPLEMENTATION END
+        #COMPOSITION IMPLEMENTATION END
         
     def viewDashboard(self):
         print(f"Displaying dashboard for student: {self.name}")
@@ -122,7 +122,7 @@ class Teacher(User):
         super().__init__(userID,name,email,password)
 
     def createSchedule(self,course,time):
-        # 🟡 ASSOCIATION/DEPENDENCY: Teacher uses the Schedule class temporarily within this method.
+        #ASSOCIATION/DEPENDENCY: Teacher uses the Schedule class temporarily within this method.
         # The Schedule object is created locally and returned/used. This is NOT Aggregation/Composition.
         newSchedule = Schedule(101,course,time)
         newSchedule.createSchedule()
@@ -133,7 +133,7 @@ class Teacher(User):
         return True
     
     def generateReport(self):
-        # 🟡 ASSOCIATION/DEPENDENCY: Teacher uses the Report class temporarily within this method.
+        #ASSOCIATION/DEPENDENCY: Teacher uses the Report class temporarily within this method.
         # A Teacher uses a report object to generate output.
         report = Report(1, "Class Performance", datetime.now())
         report.generateReport()

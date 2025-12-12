@@ -90,39 +90,45 @@ class Student(User):
         self.grade = grade
         self.section = section
 
-        # ✅ COMPOSITION:
-        self.attendance_records: List[Attendance] = []
-        self.reports: List[Report] = []
+        # ✅ COMPOSITION (◆): Student OWNS Attendance + Report
+        self.attendance_records: List[Attendance] = []   # Student ◆→ Attendance
+        self.reports: List[Report] = []                  # Student ◆→ Report
 
-        # ✅ AGGREGATION:
-        self.notifications: List[Notification] = []
+        # ✅ AGGREGATION (◇): Student HOLDS Notification references
+        self.notifications: List[Notification] = []      # Student ◇→ Notification
 
     def view_dashboard(self):
         pass
 
     def mark_attendance(self, present: bool) -> bool:
+        # ✅ COMPOSITION (◆): Student CREATES Attendance object
         status = "Present" if present else "Absent"
         new_id = len(self.attendance_records) + 1
         attendance = Attendance(new_id, self.user_id, datetime.now(), status)
+
         if attendance.record_attendance():
+            # ✅ COMPOSITION (◆): Student STORES Attendance object
             self.attendance_records.append(attendance)
             return True
         return False
 
     def receive_alerts(self) -> List[Notification]:
+        # ✅ AGGREGATION (◇): Student RETURNS stored Notification references
         return self.notifications
 
     def submit_leave_application(self, reason: str, from_date: datetime, to_date: datetime) -> bool:
         return True
 
     def add_notification(self, notification: Notification):
+        # ✅ AGGREGATION (◇): Student ADDS external Notification object
         self.notifications.append(notification)
 
     def add_report(self, report: Report):
+        # ✅ COMPOSITION (◆): Student STORES Report object created by Teacher
         self.reports.append(report)
 
 # ============================================================
-# TEACHER CLASS (AGGREGATION + COMPOSITION)
+# TEACHER CLASS (AGGREGATION + ASSOCIATION)
 # ============================================================
 
 class Teacher(User):
@@ -136,30 +142,42 @@ class Teacher(User):
         self.subject = subject
         self.designation = designation
 
-        # ✅ AGGREGATION:
-        self.schedules: List[Schedule] = []
+        # ✅ AGGREGATION (◇): Teacher HOLDS Schedule references
+        self.schedules: List[Schedule] = []  # Teacher ◇→ Schedule
 
     def create_schedule(self, schedule_id: int, course_name: str, time_slot: str) -> Schedule:
+        # ✅ AGGREGATION (◇): Teacher CREATES Schedule object
         schedule = Schedule(schedule_id, course_name, time_slot)
+
         if schedule.save_schedule():
+            # ✅ AGGREGATION (◇): Teacher STORES Schedule reference
             self.schedules.append(schedule)
+
         return schedule
 
     def mark_attendance(self, student: Student, present: bool) -> bool:
+        # ✅ ASSOCIATION (→): Teacher interacts with Attendance but does NOT own it
         status = "Present" if present else "Absent"
         new_id = len(student.attendance_records) + 1
         attendance = Attendance(new_id, student.user_id, datetime.now(), status)
+
         if attendance.record_attendance():
+            # ✅ COMPOSITION (◆): Attendance stored INSIDE Student (Student owns it)
             student.attendance_records.append(attendance)
             return True
         return False
 
     def generate_report(self, student: Student, report_type: str) -> Report:
+        # ✅ ASSOCIATION (→): Teacher CREATES Report but does NOT own it
         report_id = len(student.reports) + 1
         content = f"Report for {student.name} ({student.roll_number})"
+
         report = Report(report_id, report_type, datetime.now(), content)
         report.save_report()
+
+        # ✅ COMPOSITION (◆): Student OWNS the Report
         student.add_report(report)
+
         return report
 
     def flag_low_attendance(self, student: Student, threshold: float) -> bool:
@@ -185,10 +203,11 @@ class Admin(User):
         self.admin_id = admin_id
         self.role = role
 
-        # ✅ AGGREGATION:
-        self.managed_users: List[User] = []
+        # ✅ AGGREGATION (◇): Admin HOLDS references to Users
+        self.managed_users: List[User] = []  # Admin ◇→ User
 
     def add_user(self, user: User) -> bool:
+        # ✅ AGGREGATION (◇): Admin ADDS external User object
         if any(u.user_id == user.user_id for u in self.managed_users):
             return False
         self.managed_users.append(user)
@@ -209,21 +228,26 @@ class Admin(User):
         return False
 
     def export_report(self, report: Report) -> str:
+        # ✅ ASSOCIATION (→): Admin interacts with Report but does NOT own it
         return f"/exports/report_{report.report_id}.pdf"
 
     def configure_settings(self, setting_name: str, value) -> bool:
         return True
 
     def issue_notifications(self, users: List[User], message: str) -> int:
+        # ✅ ASSOCIATION (→): Admin CREATES Notification but does NOT own it
         notification = Notification(1, message, datetime.now())
         sent = 0
+
         for user in users:
             if notification.send_notification(user):
                 sent += 1
+
+                # ✅ AGGREGATION (◇): Student STORES Notification reference
                 if isinstance(user, Student):
                     user.add_notification(notification)
-        return sent
 
+        return sent
 
 # ============================================================
 # EXAMPLE USAGE

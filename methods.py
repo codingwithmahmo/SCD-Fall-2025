@@ -24,32 +24,7 @@
 #       Parent apne __init__() ke andar child object create kare.
 #       Example:
 #           self.profile = Profile(self.user_id)
-#
-#       Isme child object parent ke saath hi born hota hai.
 
-
-#    ✅ (B) Method-Based Composition
-#       Parent ek method ke through child object create kare
-#       aur usay apne internal structure mein store kare.
-#
-#       Example:
-#           def create_report(self):
-#               report = Report(...)
-#               self.reports.append(report)
-#
-#       Yeh bhi composition hai kyunki parent hi lifecycle control karta hai.
-
-
-#    ✅ (C) Exclusive Ownership Composition
-#       Child object sirf parent ke through hi exist kare
-#       aur kisi aur class ko directly access na ho.
-#
-#       Example:
-#           class Student:
-#               def __init__(...):
-#                   self._attendance = Attendance(...)
-#
-#       Yeh bhi composition ka ek strong form hai.
 
 
 # ✅ 3) Tumhare code mein composition EXACTLY kahan hua hai:
